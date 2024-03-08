@@ -72,6 +72,39 @@ namespace driver {
 
 		const ULONG control_code = stack_irp->Parameters.DeviceIoControl.IoControlCode;
 
+		switch (control_code) {
+		case codes::attach:
+			status = PsLookupProcessByProcessId(request->processId, &targetProcess);
+			if (status != STATUS_SUCCESS) {
+				debugPrint("[-] Nie udalo sie znalezc procesu\n");
+				irp->IoStatus.Status = status;
+				break;
+			}
+			break;
+
+		case codes::read:
+			if (targetProcess != nullptr)
+				status = MmCopyVirtualMemory(targetProcess, request->targerAddress, PsGetCurrentProcess(), request->buffer, request->size, KernelMode, &request->returnSize);
+			else
+				status = STATUS_UNSUCCESSFUL;
+
+			break;
+
+		case codes::write:
+			if (targetProcess != nullptr)
+				status = MmCopyVirtualMemory(PsGetCurrentProcess(), request->buffer, targetProcess, request->targerAddress, request->size, KernelMode, &request->returnSize);
+			else
+				status = STATUS_UNSUCCESSFUL;
+
+			break;
+
+		default:
+			break;
+		}
+
+		irp->IoStatus.Status = status;
+		irp->IoStatus.Information = sizeof request;
+
 		IoCompleteRequest(irp, IO_NO_INCREMENT);
 
 		return irp->IoStatus.Status;
