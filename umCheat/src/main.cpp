@@ -110,7 +110,7 @@ namespace driver {
 };
 
 int main() {
-	const DWORD pid = getProcessId(L"notepad.txt");
+	const DWORD pid = getProcessId(L"notepad.exe");
 
 	if (pid == 0) {
 		std::cout << "Process not found" << std::endl;
@@ -118,7 +118,7 @@ int main() {
 		return 1;
 	}
 
-	const HANDLE driverHandle = CreateFileW(L"\\\\.\\DziegielDriver", GENERIC_READ, 0, nullptr, FILE_ATTRIBUTE_NORMAL, 0, nullptr);
+	const HANDLE driverHandle = CreateFile(L"\\\\.\\DziegielDriver", GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (driverHandle == INVALID_HANDLE_VALUE) {
 		std::cout << "Failed to get driver handle" << std::endl;
 		std::cin.get();
